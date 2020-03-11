@@ -304,11 +304,7 @@ const jestConfig = {
             modulePaths: [
                 inPackage('lib/Utilities/__tests__/__fixtures__/modules')
             ],
-            setupFiles: [inPackage('scripts/fetch-mock.js')],
-            transform: {
-                // Use babel-jest for .mjs
-                '\\.es6.js$': 'babel-jest'
-            }
+            setupFiles: [inPackage('scripts/fetch-mock.js')]
         })),
         // Test any root CI scripts as well, to ensure stable CI behavior.
         configureProject('scripts', 'CI Scripts', () => ({
@@ -339,6 +335,7 @@ const jestConfig = {
         // Not node_modules
         '!**/node_modules/**',
         // Not __tests__, __helpers__, or __any_double_underscore_folders__
+        '!**/testHelpers/**',
         '!**/__[[:alpha:]]*__/**',
         '!**/.*/__[[:alpha:]]*__/**',
         // Not this file itself
