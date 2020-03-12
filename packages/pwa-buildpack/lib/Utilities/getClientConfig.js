@@ -7,6 +7,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const PWADevServer = require('../WebpackTools/PWADevServer');
 const RootComponentsPlugin = require('../WebpackTools/plugins/RootComponentsPlugin');
 const UpwardIncludePlugin = require('../WebpackTools/plugins/UpwardIncludePlugin');
+const WrapLoaderConfig = require('../WebpackTools/WrapLoaderConfig');
 
 function isDevServer() {
     return process.argv.find(v => v.includes('webpack-dev-server'));
@@ -74,9 +75,9 @@ module.exports = async function({
                         },
                         {
                             loader: 'wrap-esm-loader',
-                            options: {
-                                wrap: targets.wrapEsModules.call({})
-                            }
+                            options: targets.wrapEsModules
+                                .call(new WrapLoaderConfig())
+                                .toLoaderOptions()
                         }
                     ]
                 },

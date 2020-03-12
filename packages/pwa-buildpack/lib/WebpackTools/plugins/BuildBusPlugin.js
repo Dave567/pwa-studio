@@ -7,7 +7,9 @@ class BuildBusPlugin {
     apply(compiler) {
         compiler.hooks.thisCompilation.tap('BuildBusPlugin', compilation => {
             const logger = compilation.getLogger('BuildBusPlugin');
-            const logBusTracking = (...args) => logger.log(inspect(args));
+            const logBusTracking = trackingEvent => {
+                logger.info(inspect(trackingEvent));
+            };
             this._trackingQueue.forEach(line => logBusTracking(...line));
             this.bus.identify('BuildBusPlugin', logBusTracking);
         });

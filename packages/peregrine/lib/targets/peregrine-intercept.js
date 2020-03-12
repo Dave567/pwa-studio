@@ -1,11 +1,10 @@
 const path = require('path');
-const deepMerge = require('deepmerge');
-const PeregrineWrapperConfig = require('./PeregrineWrapperConfig');
+const WrapLoaderConfig = require('@magento/pwa-buildpack/lib/WebpackTools/WrapLoaderConfig');
 
-class TalonWrapperConfig extends PeregrineWrapperConfig {
+class TalonWrapperConfig extends WrapLoaderConfig {
     _provideSet(modulePath, ...rest) {
         return super._provideSet(
-            path.resolve(__dirname, '../lib/talons/', modulePath),
+            path.resolve(__dirname, '../talons/', modulePath),
             ...rest
         );
     }
@@ -21,9 +20,9 @@ class TalonWrapperConfig extends PeregrineWrapperConfig {
 }
 
 module.exports = targets => {
-    targets.of('@magento/pwa-buildpack').wrapEsModules.tap(wrap => {
-        const talonWrapperConfig = new TalonWrapperConfig();
+    targets.of('@magento/pwa-buildpack').wrapEsModules.tap(wrapConfig => {
+        const talonWrapperConfig = new TalonWrapperConfig(wrapConfig);
         targets.own.talons.call(talonWrapperConfig);
-        return deepMerge(wrap, talonWrapperConfig.toJSON());
+        return wrapConfig;
     });
 };

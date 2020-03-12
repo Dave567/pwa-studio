@@ -1,17 +1,35 @@
+const { inspect } = require('util');
+const jsonCache = new WeakMap();
+
+class Inspectable {
+    constructor(props) {
+        this._props = props;
+    }
+    [inspect.custom](depth, options) {
+        if (depth < 0) {
+            return options.stylize(this.toString(), 'special');
+        }
+        return this._props;
+    }
+    toString() {
+        return `${this._props.type}<${this._props.id}>`;
+    }
+}
+
 const liveMethods = {
     toJSON() {
-        if (!this.hasOwnProperty('_identifier')) {
-            throw new Error(
-                'Trackable must be initialized with tracker.identify'
-            );
+        if (jsonCache.has(this)) {
+            return jsonCache.get(this);
         }
-        const json = {
+        const props = {
             type: this.constructor.name,
-            id: this._identifier
+            id: this._ensureIdentifier()
         };
         if (this._parent) {
-            json.parent = this._parent.toJSON();
+            props.parent = this._parent.toJSON();
         }
+        const json = new Inspectable(props);
+        jsonCache.set(this, json);
         return json;
     },
     track(event, ...args) {
@@ -29,7 +47,9 @@ const liveMethods = {
 };
 
 const deadMethods = {
-    toJSON() {},
+    toJSON() {
+        return {};
+    },
     track() {}
 };
 
@@ -39,6 +59,14 @@ class Trackable {
     }
     static disableTracking() {
         Object.assign(Trackable.prototype, deadMethods);
+    }
+    _ensureIdentifier() {
+        if (!this.hasOwnProperty('_identifier')) {
+            throw new Error(
+                'Trackable must be initialized with tracker.identify'
+            );
+        }
+        return this._identifier;
     }
     identify(identifier, owner) {
         this._identifier = identifier;

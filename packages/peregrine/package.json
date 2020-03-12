@@ -18,7 +18,6 @@
   "homepage": "https://github.com/magento/pwa-studio/tree/master/packages/peregrine#readme",
   "devDependencies": {
     "@magento/eslint-config": "~1.5.0",
-    "deepmerge": "~4.2.2",
     "intl": "~1.2.5",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
@@ -47,8 +46,8 @@
   },
   "pwa-studio": {
     "targets": {
-      "declare": "./lib/targets/declare",
-      "intercept": "./lib/targets/intercept"
+      "declare": "./lib/targets/peregrine-declare",
+      "intercept": "./lib/targets/peregrine-intercept"
     }
   },
   "module": "lib/index.js",

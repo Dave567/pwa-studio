@@ -93,13 +93,24 @@ test('will not let you construct it by itself', () => {
     expect(() => BuildBus.for('./fake-context')).not.toThrow();
 });
 
-test('caches buses for contexts', () => {
-    expect(BuildBus.for('./somewhere')).toBe(BuildBus.for('./somewhere'));
+test('caches buses for contexts and does not init the same bus twice', () => {
+    const bus = BuildBus.for('./somewhere');
+    const cachedBus = BuildBus.for('./somewhere');
+    bus.init();
+    cachedBus.init();
+    expect(bus).toBe(cachedBus);
     expect(mockHandlers.declares3.declare).toHaveBeenCalledTimes(1);
 });
 
+test('can clear cache by context name', () => {
+    const bus = BuildBus.for('./somewhere');
+    expect(BuildBus.for('./somewhere')).toBe(bus);
+    BuildBus.clear('./somewhere');
+    expect(BuildBus.for('./somewhere')).not.toBe(bus);
+});
+
 test('calls declare and then intercept', () => {
-    BuildBus.for('./fake-context');
+    BuildBus.for('./fake-context').init();
     expect(mockHandlers.declares3.declare).toHaveBeenCalledTimes(1);
     expect(mockHandlers.declaresandintercepts2.declare).toHaveBeenCalledTimes(
         1
@@ -116,7 +127,7 @@ test('calls declare and then intercept', () => {
 });
 
 test('can intercept declared targets', () => {
-    BuildBus.for('./fake-context2');
+    BuildBus.for('./fake-context2').init();
     expect(mockInterceptors.declaresandintercepts2).toHaveBeenCalled();
     expect(mockInterceptors.intercepts1).toHaveBeenCalled();
     const singing = mockTargets.declares3;
@@ -129,12 +140,14 @@ test('errors if declared target is not a hook', () => {
     mockHandlers.declares3.declare.mockImplementationOnce(targets =>
         targets.declare({ bad: new Date() })
     );
-    expect(() => BuildBus.for('./fake-context')).toThrowErrorMatchingSnapshot();
+    expect(() =>
+        BuildBus.for('./fake-context').init()
+    ).toThrowErrorMatchingSnapshot();
     mockHandlers.declares3.declare.mockImplementationOnce(targets =>
         targets.declare({ worse: null })
     );
     expect(() =>
-        BuildBus.for('./another-fake-context')
+        BuildBus.for('./another-fake-context').init()
     ).toThrowErrorMatchingSnapshot();
 });
 
@@ -142,7 +155,7 @@ test('logs but does not error if declaring not in declare phase', () => {
     mockHandlers.intercepts1.intercept.mockImplementationOnce(targets =>
         targets.declare({ foo: new SyncHook() })
     );
-    expect(() => BuildBus.for('./fake-context')).not.toThrow();
+    expect(() => BuildBus.for('./fake-context').init()).not.toThrow();
     expect(console.log).toHaveBeenCalled();
     expect(console.log.mock.calls[0][0]).toMatchObject({
         args: ['declare'],
@@ -157,7 +170,7 @@ test('logs but does not error if getting target not in intercept phase', () => {
     mockHandlers.declaresandintercepts2.declare.mockImplementationOnce(
         targets => targets.of('declaresandintercepts2')
     );
-    expect(() => BuildBus.for('./fake-context')).not.toThrow();
+    expect(() => BuildBus.for('./fake-context').init()).not.toThrow();
     expect(console.log).toHaveBeenCalled();
     expect(console.log.mock.calls[0][0]).toMatchObject({
         args: ['declare'],
@@ -169,6 +182,6 @@ test('logs but does not error if getting target not in intercept phase', () => {
 });
 
 test('errors if requested target source does not exist', () => {
-    const bus = BuildBus.for('./fake-context');
+    const bus = BuildBus.for('./fake-context').init();
     expect(() => bus.getTargetsOf('bar')).toThrow('has not yet declared');
 });
