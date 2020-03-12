@@ -16,6 +16,11 @@ groups: !!pairs
     - "app-bar"
     - "button"
     - "button-group"
+    - group:
+        label: "Inputs"
+        items:
+        - "select-input"
+        - "text-input"
 
 pages: !!pairs
 - app-bar: "App bar"
@@ -24,4 +29,6 @@ pages: !!pairs
 - color: "Color"
 - design-tokens: "Design tokens"
 - principles: "Principles"
+- select-input: "Select input"
+- text-input: "Text input"
 - typography: "Typography"
